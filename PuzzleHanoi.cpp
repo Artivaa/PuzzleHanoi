@@ -55,11 +55,16 @@ bool moveDisk(char fromRod, char toRod) {
         cerr << "Ошибка: Стержень " << fromRod << " пуст." << endl; return false;
     }
     // Проверка правила: больший диск не должен ложиться на меньший
-    if (sizes[to] > 0 && rods[from][sizes[from] - 1] > rods[to][sizes[to] - 1]) {
-        cerr << "Ошибка: Нельзя переместить больший диск (" << rods[from][sizes[from] - 1]
-            << ") на меньший (" << rods[to][sizes[to] - 1] << ")." << endl;
-        return false;
+    if (sizes[to] > 0) {
+        if (rods[from][sizes[from] - 1] > rods[to][sizes[to] - 1]) {
+            cerr << "Ошибка: Нельзя переместить больший диск ("
+                << rods[from][sizes[from] - 1]
+                << ") на меньший ("
+                << rods[to][sizes[to] - 1] << ")." << endl;
+            return false;
+        }
     }
+
 
     // Перемещаем верхний диск
     int disk = rods[from][sizes[from] - 1];
