@@ -1,34 +1,22 @@
-﻿
-#include <iostream>
+﻿#include <iostream>
 #include <locale.h>
 
 using namespace std;
 
-// Константы для стержней
-const char ROD_A = 'A';
-const char ROD_B = 'B';
-const char ROD_C = 'C';
-
-// Глобальные переменные для стержней и их размеров
-int* rods[3];
-int sizes[3] = { 0, 0, 0 };
-
-// Функция для получения индекса стержня по его имени
 int getRodIndex(char rod) {
-    if (rod < ROD_A) {
+    if (rod < 'A') {
         return -1;
     }
-    if (rod > ROD_C) {
+    if (rod > 'C') {
         return -1;
     }
-    return rod - ROD_A;
+    return rod - 'A';
 }
 
 
-// Функция для отображения состояния стержней
-void displayRods() {
+void displayRods(int* sizes, int** rods) {
     for (int i = 0; i < 3; ++i) {
-        cout << "Стержень " << (char)(ROD_A + i) << ":";
+        cout << "Стержень " << (char)('A' + i) << ":";
         if (sizes[i] == 0) {
             cout << " (пусто)" << endl;
         }
@@ -45,28 +33,28 @@ void displayRods() {
     cout << "-----" << endl;
 }
 
-// Функция для перемещения диска между стержнями
-bool moveDisk(char fromRod, char toRod) {
+bool moveDisk(char fromRod, char toRod, int* sizes, int** rods) {
     int from = getRodIndex(fromRod);
     int to = getRodIndex(toRod);
 
-    // Проверка на корректность стержней
     if (from == -1) {
         cerr << "Ошибка: Недопустимый стержень." << endl;
         return false;
     }
+
     if (to == -1) {
         cerr << "Ошибка: Недопустимый стержень." << endl;
         return false;
     }
 
-    // Проверка, что исходный стержень не пуст
+
     if (sizes[from] == 0) {
-        cerr << "Ошибка: Стержень " << fromRod << " пуст." << endl; return false;
+        cerr << "Ошибка: Стержень " << fromRod << " пуст." << endl;
+        return false;
     }
-    // Проверка правила: больший диск не должен ложиться на меньший
-    if (sizes[to] > 0) {
-        if (rods[from][sizes[from] - 1] > rods[to][sizes[to] - 1]) {
+
+    if (sizes[to] > 0) {  // Если на столбце 'to' уже есть хотя бы один диск
+        if (rods[from][sizes[from] - 1] > rods[to][sizes[to] - 1]) {  // Если диск, который переносится, больше верхнего диска на 'to'
             cerr << "Ошибка: Нельзя переместить больший диск ("
                 << rods[from][sizes[from] - 1]
                 << ") на меньший ("
@@ -76,30 +64,25 @@ bool moveDisk(char fromRod, char toRod) {
     }
 
 
-    // Перемещаем верхний диск
     int disk = rods[from][sizes[from] - 1];
     rods[to][sizes[to]++] = disk;
     sizes[from]--;
 
-    // Выводим действие и состояние
-    cout << "Переместить диск " << disk << " с стержня " << fromRod << " на стержень " << toRod << endl;
-    displayRods();
+    cout << "Переместить диск " << disk << " с стержня " << fromRod
+        << " на стержень " << toRod << endl;
+    displayRods(sizes, rods);
     return true;
 }
 
-// Рекурсивное решение Ханойской башни
-void solveHanoi(int numDisks, char sourceRod, char targetRod, char auxRod) {
+void solveHanoi(int numDisks, char sourceRod, char targetRod, char auxRod,
+    int* sizes, int** rods) {
     if (numDisks > 0) {
-        // Шаг 1: Переместить n-1 дисков с source на auxiliary
-        solveHanoi(numDisks - 1, sourceRod, auxRod, targetRod);
-        // Шаг 2: Переместить n-й диск с source на target
-        moveDisk(sourceRod, targetRod);
-        // Шаг 3: Переместить n-1 дисков с auxiliary на target
-        solveHanoi(numDisks - 1, auxRod, targetRod, sourceRod);
+        solveHanoi(numDisks - 1, sourceRod, auxRod, targetRod, sizes, rods);
+        moveDisk(sourceRod, targetRod, sizes, rods);
+        solveHanoi(numDisks - 1, auxRod, targetRod, sourceRod, sizes, rods);
     }
 }
 
-// Главная функция: настройка и решение Ханойской башни
 int main() {
     setlocale(LC_ALL, "ru_RU");
 
@@ -108,33 +91,27 @@ int main() {
     cout << "Введите количество дисков: ";
     cin >> numDisks;
 
-    // Проверка корректности ввода
     if (numDisks <= 0) {
         cerr << "Ошибка: Количество дисков должно быть положительным целым числом." << endl;
         return 1;
     }
 
-    // Выделяем память для стержней
+    int* rods[3];
+    int sizes[3] = { numDisks, 0, 0 };
+
     for (int i = 0; i < 3; ++i) {
         rods[i] = new int[numDisks];
     }
 
-    // Инициализируем стержень A
-    sizes[0] = numDisks;
-    sizes[1] = 0;
-    sizes[2] = 0;
     for (int i = 0; i < numDisks; ++i) {
         rods[0][i] = numDisks - i;
     }
 
-    // Отображаем начальное состояние
     cout << endl << "Начальное состояние:" << endl;
-    displayRods();
+    displayRods(sizes, rods);
 
-    // Решаем задачу
-    solveHanoi(numDisks, ROD_A, ROD_C, ROD_B);
+    solveHanoi(numDisks, 'A', 'C', 'B', sizes, rods);
 
-    // Освобождаем память
     for (int i = 0; i < 3; ++i) {
         delete[] rods[i];
         rods[i] = nullptr;
