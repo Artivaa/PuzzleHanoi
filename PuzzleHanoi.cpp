@@ -15,11 +15,15 @@ int sizes[3] = { 0, 0, 0 };
 
 // Функция для получения индекса стержня по его имени
 int getRodIndex(char rod) {
-    if (rod >= ROD_A && rod <= ROD_C) {
-        return rod - ROD_A;
+    if (rod < ROD_A) {
+        return -1;
     }
-    return -1; // Недопустимый стержень
+    if (rod > ROD_C) {
+        return -1;
+    }
+    return rod - ROD_A;
 }
+
 
 // Функция для отображения состояния стержней
 void displayRods() {
@@ -47,9 +51,15 @@ bool moveDisk(char fromRod, char toRod) {
     int to = getRodIndex(toRod);
 
     // Проверка на корректность стержней
-    if (from == -1 || to == -1) {
-        cerr << "Ошибка: Недопустимый стержень." << endl; return false;
+    if (from == -1) {
+        cerr << "Ошибка: Недопустимый стержень." << endl;
+        return false;
     }
+    if (to == -1) {
+        cerr << "Ошибка: Недопустимый стержень." << endl;
+        return false;
+    }
+
     // Проверка, что исходный стержень не пуст
     if (sizes[from] == 0) {
         cerr << "Ошибка: Стержень " << fromRod << " пуст." << endl; return false;
